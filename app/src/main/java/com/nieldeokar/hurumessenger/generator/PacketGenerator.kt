@@ -2,27 +2,24 @@ package com.nieldeokar.hurumessenger.generator
 
 import com.nieldeokar.hurumessenger.packets.LocalAddressCard
 import com.nieldeokar.hurumessenger.packets.MePacket
-import com.nieldeokar.hurumessenger.services.LocalPacketTransport
+import com.nieldeokar.hurumessenger.services.LocalTransport
 import com.nieldeokar.hurumessenger.utils.NetworkUtils
 
 class PacketGenerator {
 
-    constructor()
+    fun generateMePacket(): ByteArray {
 
-    fun generateIamPacket(): ByteArray {
-
-
-        val iamPacket = MePacket()
-
+        val mePacket = MePacket()
 
         val localAddressCard = LocalAddressCard()
         localAddressCard.localV4Address = NetworkUtils.getLocalIpV4Address()!!
-        localAddressCard.localV4Port = LocalPacketTransport.listeningPort
+        localAddressCard.localV4Port = LocalTransport.listeningPort
 
-        iamPacket.localAddressCard = localAddressCard
+        mePacket.localAddressCard = localAddressCard
+        mePacket.name = "USER 1"
 
 
-        return iamPacket.toByteArray()
+        return mePacket.toByteArray()
 
     }
 }

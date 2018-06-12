@@ -6,8 +6,14 @@ import timber.log.Timber
 
 class HuruApp : Application() {
 
+    companion object {
+
+        lateinit var appInstance : HuruApp
+    }
+
     override fun onCreate() {
         super.onCreate()
+        appInstance = this
 
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())

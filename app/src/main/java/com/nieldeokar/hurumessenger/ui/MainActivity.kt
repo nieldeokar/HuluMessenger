@@ -3,15 +3,11 @@ package com.nieldeokar.hurumessenger.ui
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import com.nieldeokar.hurumessenger.R
-import com.nieldeokar.hurumessenger.packets.LocalAddressCard
-import com.nieldeokar.hurumessenger.services.LocalPacketTransport
-import com.nieldeokar.hurumessenger.utils.NetworkUtils
-import com.nieldeokar.hurumessenger.utils.Utils
-import timber.log.Timber
+import com.nieldeokar.hurumessenger.services.LocalTransport
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var localPacketTransport : LocalPacketTransport
+    val localTransport = LocalTransport()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,14 +18,13 @@ class MainActivity : AppCompatActivity() {
         // 3. Prepare listener
         // 4. Process received packet on listener
 
-        localPacketTransport = LocalPacketTransport(this)
-        localPacketTransport.start()
 
-        val localAddressCard = LocalAddressCard()
-        localAddressCard.localV4Address = NetworkUtils.getLocalIpV4Address()!!
-        localAddressCard.localV4Port = LocalPacketTransport.listeningPort
+        localTransport.initialise()
+    }
 
-        Timber.d("local v4 addreess ${localAddressCard.localV4Address.hostAddress}")
-        Timber.d("local port ${LocalPacketTransport.listeningPort}")
+
+    override fun onDestroy() {
+        super.onDestroy()
+        localTransport.stop()
     }
 }

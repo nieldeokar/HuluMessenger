@@ -1,5 +1,9 @@
 package com.nieldeokar.hurumessenger.utils
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import timber.log.Timber
 import java.net.*
 import java.security.InvalidParameterException
@@ -22,7 +26,7 @@ object NetworkUtils {
                     val inetAddress = enumInetAddress.nextElement()
 
                     if (!inetAddress.isLoopbackAddress && inetAddress is Inet4Address) {
-                        Timber.i("Local Ip Address: " + inetAddress.getHostAddress() + "\n");
+                        Timber.i("Local Ip Address: " + inetAddress.getHostAddress() + "\n")
                         ipAddress = inetAddress
                     }
                 }
@@ -48,7 +52,22 @@ object NetworkUtils {
         } catch (ignored: UnknownHostException) {
             false
         }
+    }
 
+    @JvmStatic
+    fun hasAbroadcastableNetwork(context: Context): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (cm != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val activeNetwork = cm.activeNetwork ?: return false
+                val networkCapabilities = cm.getNetworkCapabilities(activeNetwork)
+                return networkCapabilities != null && (!networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN))
+            } else {
+                val activeNetwork = cm.activeNetworkInfo
+                return activeNetwork.typeName != null && !activeNetwork.typeName.equals("MOBILE", ignoreCase = true)
+            }
+        }
+        return false
     }
 
 }
