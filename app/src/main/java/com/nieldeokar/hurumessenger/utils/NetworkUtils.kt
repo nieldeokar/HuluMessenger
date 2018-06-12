@@ -1,10 +1,9 @@
 package com.nieldeokar.hurumessenger.utils
 
 import timber.log.Timber
-import java.net.Inet4Address
-import java.net.NetworkInterface
-import java.net.SocketException
-import java.net.UnknownHostException
+import java.net.*
+import java.security.InvalidParameterException
+import kotlin.experimental.and
 
 object NetworkUtils {
 
@@ -35,6 +34,21 @@ object NetworkUtils {
         }
 
         return ipAddress
+    }
+
+
+    @JvmStatic
+    fun isValidNonSelfSocket(socketAddress: InetSocketAddress): Boolean {
+        val inetAddress = socketAddress.address
+        return try {
+            !(socketAddress.port <= 0 || socketAddress.port > 65535 ||
+                    inetAddress.isMulticastAddress ||
+                    inetAddress.isAnyLocalAddress ||
+                    inetAddress == InetAddress.getByName("0.0.0.0"))
+        } catch (ignored: UnknownHostException) {
+            false
+        }
+
     }
 
 }
