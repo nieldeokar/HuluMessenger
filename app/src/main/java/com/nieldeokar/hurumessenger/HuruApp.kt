@@ -1,7 +1,9 @@
 package com.nieldeokar.hurumessenger
 
 import android.app.Application
+import android.provider.Settings
 import android.util.Log
+import com.nileshdeokar.healthapp.database.AppDatabase
 import timber.log.Timber
 
 class HuruApp : Application() {
@@ -30,5 +32,15 @@ class HuruApp : Application() {
                 return
             }
         }
+    }
+
+
+    fun getDatabase(): AppDatabase? {
+        return AppDatabase.getInstance(this)
+    }
+
+    fun getDeviceID() : String {
+        return  Settings.Secure.getString(contentResolver,
+                Settings.Secure.ANDROID_ID)
     }
 }

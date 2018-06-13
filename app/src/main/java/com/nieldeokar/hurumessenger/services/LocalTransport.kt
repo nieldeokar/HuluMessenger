@@ -168,13 +168,11 @@ class LocalTransport {
                     val packetData = Arrays.copyOfRange(packet.data, 0, packet.length)
 
                     val mePacket = MePacket()
-                    val rawData = Arrays.copyOfRange(packetData, 1, packetData.size)
-                    mePacket.setPacket(rawData)
+                    mePacket.setPacket(packetData)
 
-                    val firstByte = packetData[0].toInt()
                     Timber.i("Received broadcast packet from %s", address.toString())
 
-                    when (firstByte) {
+                    when (mePacket.packetType) {
                         1 -> {
                             Timber.i("packetAddress " + mePacket.localAddressCard.localV4Address.toString())
                             Timber.i("packetName " + mePacket.name)
@@ -185,7 +183,7 @@ class LocalTransport {
                             onMePacketReceivedListener?.onMePacketReceived(mePacket)
 
                         }
-                        else -> Timber.w("Received in unknown packet type %d on %s , from %s. Packet size %d", firstByte, Thread.currentThread().name, address.toString(), packetData.size)
+                        else -> Timber.w("Received in unknown packet type %d on %s , from %s. Packet size %d", mePacket.packetType, Thread.currentThread().name, address.toString(), packetData.size)
                     }
                     retryCount = 0
                 } catch (e: IOException) {
@@ -196,9 +194,7 @@ class LocalTransport {
                         localSocket.close()
                         return
                     }
-
                 }
-
             }
         }
     }

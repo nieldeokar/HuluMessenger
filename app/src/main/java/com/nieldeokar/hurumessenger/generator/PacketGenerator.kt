@@ -18,6 +18,7 @@ class PacketGenerator {
 
         mePacket.localAddressCard = localAddressCard
         mePacket.name = HuruApp.userName
+        mePacket.deviceId = HuruApp.appInstance.getDeviceID()
 
 
         return mePacket.toByteArray()
