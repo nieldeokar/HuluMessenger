@@ -9,11 +9,13 @@ class HuruApp : Application() {
     companion object {
 
         lateinit var appInstance : HuruApp
+        lateinit var userName : String
     }
 
     override fun onCreate() {
         super.onCreate()
         appInstance = this
+        userName = "User1"
 
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())

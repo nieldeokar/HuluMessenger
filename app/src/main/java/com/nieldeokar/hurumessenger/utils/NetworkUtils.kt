@@ -6,6 +6,8 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import timber.log.Timber
 import java.net.*
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
 import java.security.InvalidParameterException
 import kotlin.experimental.and
 
@@ -68,6 +70,30 @@ object NetworkUtils {
             }
         }
         return false
+    }
+
+    @JvmStatic
+    fun removeExtraBytesFromString(data: String, maxLength: Int): ByteArray {
+        val utf8CharSet = Charset.forName("UTF-8")
+        val utf8String = data.toByteArray(utf8CharSet)
+        if (utf8String.size <= maxLength)
+            return utf8String
+        else {
+            val buffer = ByteBuffer.allocate(maxLength)
+            val originalStringLength = data.length
+            var i = originalStringLength
+            while (i > 0) {
+                val j = data.substring(i - 1, i).toByteArray(utf8CharSet)
+                if (buffer.remaining() >= j.size) {
+                    buffer.put(j)
+                } else {
+                    break
+                }
+                i++
+            }
+            return buffer.array()
+
+        }
     }
 
 }

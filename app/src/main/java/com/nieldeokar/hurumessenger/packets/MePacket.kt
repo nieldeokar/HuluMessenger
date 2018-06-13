@@ -1,7 +1,8 @@
 package com.nieldeokar.hurumessenger.packets
 
+import com.nieldeokar.hurumessenger.utils.NetworkUtils
+import com.nieldeokar.hurumessenger.utils.Utils
 import java.nio.ByteBuffer
-import java.nio.charset.Charset
 
 class MePacket {
 
@@ -17,19 +18,26 @@ class MePacket {
         val localAddressCardBytes = ByteArray(LocalAddressCard.size)
         byteBuffer.get(localAddressCardBytes,0,localAddressCardBytes.size)
 
-        val nameBytes = ByteArray(6)
-        byteBuffer.get(nameBytes,0,nameBytes.size)
-        name = String(nameBytes,Charset.defaultCharset())
+        val userNameLengthInBytes = Utils.toUnsignedInt(byteBuffer.get())
+        val userNameAsBytes = ByteArray(userNameLengthInBytes)
+        byteBuffer.get(userNameAsBytes)
+        name = String(userNameAsBytes, Charsets.UTF_8)
+
 
         localAddressCard = LocalAddressCard(localAddressCardBytes)
 
     }
 
     fun toByteArray(): ByteArray {
-        val byteBuffer = ByteBuffer.allocate(size + 1 + 6)
+        val userNameAsBytesArray = NetworkUtils.removeExtraBytesFromString(name, 50)
+
+        val byteBuffer = ByteBuffer.allocate(1 + size + 1 + userNameAsBytesArray.size)
         byteBuffer.put(1.toByte()) // id
         byteBuffer.put(localAddressCard.toBytes())
-        byteBuffer.put(name.toByteArray(Charset.defaultCharset()))
+
+        byteBuffer.put((userNameAsBytesArray.size.toByte()))
+        byteBuffer.put(userNameAsBytesArray)
+
         return byteBuffer.array()
     }
 }

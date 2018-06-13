@@ -1,5 +1,6 @@
 package com.nieldeokar.hurumessenger.generator
 
+import com.nieldeokar.hurumessenger.HuruApp
 import com.nieldeokar.hurumessenger.packets.LocalAddressCard
 import com.nieldeokar.hurumessenger.packets.MePacket
 import com.nieldeokar.hurumessenger.services.LocalTransport
@@ -16,7 +17,7 @@ class PacketGenerator {
         localAddressCard.localV4Port = LocalTransport.listeningPort
 
         mePacket.localAddressCard = localAddressCard
-        mePacket.name = "USER 1"
+        mePacket.name = HuruApp.userName
 
 
         return mePacket.toByteArray()

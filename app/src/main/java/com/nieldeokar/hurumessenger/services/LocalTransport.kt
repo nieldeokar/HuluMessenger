@@ -37,6 +37,8 @@ class LocalTransport {
     private val broadcastPorts = intArrayOf(33445,9128,8888)
     private var hasBroadcastableNetwork = false
 
+    private var onMePacketReceivedListener : OnMePacketReceivedListener? = null
+
     @Volatile private var lastSentTime = 0L
 
 
@@ -70,6 +72,9 @@ class LocalTransport {
         }
     }
 
+    fun setOnMePacketReceivedListener(on : OnMePacketReceivedListener){
+        this.onMePacketReceivedListener = on
+    }
 
     fun initialise() {
         myHandlerThread.start()
@@ -83,11 +88,9 @@ class LocalTransport {
             localBroadCastThread = Thread(LocalListenerRunnable(broadcastSocket!!))
             localBroadCastThread.start()
         }
-
-        sendMePacketNow()
     }
 
-    private fun sendMePacketNow() {
+    fun sendMePacketNow() {
         handler?.removeCallbacks(mePacketSenderRunnable)
         handler?.post(mePacketSenderRunnable)
     }
@@ -164,21 +167,22 @@ class LocalTransport {
                     }
                     val packetData = Arrays.copyOfRange(packet.data, 0, packet.length)
 
-                    val packet1 = MePacket()
+                    val mePacket = MePacket()
                     val rawData = Arrays.copyOfRange(packetData, 1, packetData.size)
-                    packet1.setPacket(rawData)
+                    mePacket.setPacket(rawData)
 
                     val firstByte = packetData[0].toInt()
                     Timber.i("Received broadcast packet from %s", address.toString())
 
                     when (firstByte) {
                         1 -> {
-                            Timber.i("packetAddress " + packet1.localAddressCard.localV4Address.toString())
-                            Timber.i("packetName " + packet1.name)
+                            Timber.i("packetAddress " + mePacket.localAddressCard.localV4Address.toString())
+                            Timber.i("packetName " + mePacket.name)
                             if (System.currentTimeMillis() - getLastSentTime() > 1000) {
                                 sendMePacketNow()
                             }
 
+                            onMePacketReceivedListener?.onMePacketReceived(mePacket)
 
                         }
                         else -> Timber.w("Received in unknown packet type %d on %s , from %s. Packet size %d", firstByte, Thread.currentThread().name, address.toString(), packetData.size)
@@ -197,5 +201,9 @@ class LocalTransport {
 
             }
         }
+    }
+
+    interface OnMePacketReceivedListener {
+        fun onMePacketReceived(mePacket: MePacket)
     }
 }
