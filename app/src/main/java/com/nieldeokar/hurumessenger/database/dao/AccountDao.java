@@ -6,6 +6,7 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
+import com.nieldeokar.hurumessenger.R;
 import com.nieldeokar.hurumessenger.database.entity.AccountEntity;
 import com.nieldeokar.hurumessenger.database.entity.UserEntity;
 
@@ -27,7 +28,7 @@ public interface AccountDao {
     @Query("SELECT * FROM account where aid = :id")
     AccountEntity findByAid(int id);
 
-    @Insert(onConflict = IGNORE)
+    @Insert(onConflict = REPLACE)
     void insertAccount(AccountEntity accountEntity);
 
     @Delete

@@ -27,10 +27,13 @@ public interface UsersDao {
     @Query("SELECT * FROM users where uid = :id")
     UserEntity findByUid(int id);
 
+    @Query("SELECT * FROM users where device_id = :deviceId")
+    UserEntity findByDeviceId(String deviceId);
+
     @Insert(onConflict = IGNORE)
     void insertAll(List<UserEntity> usersEntities);
 
-    @Insert(onConflict = IGNORE)
+    @Insert(onConflict = REPLACE)
     void insertUser(UserEntity userEntity);
 
     @Delete

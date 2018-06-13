@@ -21,9 +21,12 @@ import com.nieldeokar.hurumessenger.database.entity.AccountEntity
 
 class MainActivity : AppCompatActivity(), LocalTransport.OnMePacketReceivedListener {
 
-    lateinit var localTransport : LocalTransport
+    lateinit var localTransport: LocalTransport
 
-    val packetGenerator = PacketGenerator()
+    val users = ArrayList<UserEntity>()
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,19 +55,19 @@ class MainActivity : AppCompatActivity(), LocalTransport.OnMePacketReceivedListe
         executor.execute({
             val accounts = (application as HuruApp).getDatabase()?.accountDao()?.all
 
-            if(accounts?.size != 0){
+            if (accounts?.size != 0) {
 
                 localTransport.sendMePacketNow()
 
-                val users = (application as HuruApp).getDatabase()?.usersDao()?.all
+               val users = (application as HuruApp).getDatabase()?.usersDao()?.all
 
-                if(users?.size != 0){
+                if (users?.size != 0) {
                     runOnUiThread({
                         recyclerView.adapter = UsersAdapter(users)
                     })
                 }
 
-            }else{
+            } else {
                 Timber.d("No account object found")
 
             }
@@ -82,9 +85,9 @@ class MainActivity : AppCompatActivity(), LocalTransport.OnMePacketReceivedListe
 
     }
 
-    fun send(view : View){
+    fun send(view: View) {
         val usrName = etUserName.text.toString()
-        if(usrName.isNotBlank() && usrName.isNotEmpty()){
+        if (usrName.isNotBlank() && usrName.isNotEmpty()) {
             HuruApp.userName = usrName
 
             val account = AccountEntity()
@@ -105,20 +108,36 @@ class MainActivity : AppCompatActivity(), LocalTransport.OnMePacketReceivedListe
     override fun onMePacketReceived(mePacket: MePacket) {
         val str = "mePacketReceived from : ${mePacket.name} \n"
         Timber.d(str)
-        val user = UserEntity()
-        user.device_id = mePacket.deviceId
-        user.mePacket = mePacket.toByteArray()
-        user.name = mePacket.name
+
 
         val executor = Executors.newSingleThreadExecutor()
 
+        var userInLocal : UserEntity? = UserEntity()
         executor.execute({
-            (application as HuruApp).getDatabase()?.usersDao()?.insertUser(user)
+            userInLocal = (application as HuruApp).getDatabase()?.usersDao()?.findByDeviceId(mePacket.deviceId)
+
+            if (userInLocal == null) {
+                userInLocal = UserEntity()
+            }
+            userInLocal?.device_id = mePacket.deviceId
+            userInLocal?.mePacket = mePacket.toByteArray()
+            userInLocal?.name = mePacket.name
+
+            runOnUiThread({
+                val userAdapter = ((recyclerView.adapter) as UsersAdapter)
+                val index = userAdapter.userEntityList.indexOf(userInLocal)
+
+                if(index != -1){
+                    userAdapter.userEntityList.set(index,userInLocal)
+                    userAdapter.notifyItemChanged(index)
+                }else{
+                    userAdapter.addUser(userInLocal)
+                }
+
+            })
         })
 
-        runOnUiThread({
-            ((recyclerView.adapter) as UsersAdapter).addUser(user)
-        })
+
     }
 
     override fun onDestroy() {
