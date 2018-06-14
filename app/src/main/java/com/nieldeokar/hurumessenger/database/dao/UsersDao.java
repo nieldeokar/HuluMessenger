@@ -7,7 +7,7 @@ import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
 
-import com.nieldeokar.hurumessenger.database.entity.UserEntity;
+import com.nieldeokar.hurumessenger.database.entity.User;
 
 import java.util.List;
 
@@ -22,23 +22,23 @@ import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 public interface UsersDao {
 
     @Query("SELECT * FROM users")
-    List<UserEntity> getAll();
+    List<User> getAll();
 
     @Query("SELECT * FROM users where uid = :id")
-    UserEntity findByUid(int id);
+    User findByUid(int id);
 
     @Query("SELECT * FROM users where device_id = :deviceId")
-    UserEntity findByDeviceId(String deviceId);
+    User findByDeviceId(String deviceId);
 
     @Insert(onConflict = IGNORE)
-    void insertAll(List<UserEntity> usersEntities);
+    void insertAll(List<User> usersEntities);
 
     @Insert(onConflict = REPLACE)
-    void insertUser(UserEntity userEntity);
+    void insertUser(User userEntity);
 
     @Delete
-    void delete(UserEntity userEntity);
+    void delete(User userEntity);
 
     @Update(onConflict = REPLACE)
-    public void updateUser(UserEntity userEntity);
+    public void updateUser(User userEntity);
 }

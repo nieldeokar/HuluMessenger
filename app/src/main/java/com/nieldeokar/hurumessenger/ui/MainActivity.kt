@@ -2,30 +2,27 @@ package com.nieldeokar.hurumessenger.ui
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.Settings
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import com.nieldeokar.hurumessenger.HuruApp
 import com.nieldeokar.hurumessenger.R
-import com.nieldeokar.hurumessenger.database.entity.UserEntity
 import com.nieldeokar.hurumessenger.generator.PacketGenerator
 import com.nieldeokar.hurumessenger.packets.MePacket
 import com.nieldeokar.hurumessenger.services.LocalTransport
-import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 import java.util.concurrent.Executors
-import android.provider.Settings.Secure
+import com.nieldeokar.hurumessenger.R.id.recyclerView
 import com.nieldeokar.hurumessenger.database.entity.AccountEntity
+import com.nieldeokar.hurumessenger.models.User
+import java.util.ArrayList
 
 
 class MainActivity : AppCompatActivity(), LocalTransport.OnMePacketReceivedListener {
 
-    lateinit var localTransport: LocalTransport
-
-    val users = ArrayList<UserEntity>()
 
 
+    val list = ArrayList<User>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,35 +40,11 @@ class MainActivity : AppCompatActivity(), LocalTransport.OnMePacketReceivedListe
 
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.addItemDecoration(MyDividerItemDecoration(this, LinearLayoutManager.VERTICAL, 16))
-
-
-        val list = ArrayList<UserEntity>()
-        recyclerView.adapter = UsersAdapter(list)
-
         recyclerView.itemAnimator = DefaultItemAnimator()
 
-        val executor = Executors.newSingleThreadExecutor()
 
-        executor.execute({
-            val accounts = (application as HuruApp).getDatabase()?.accountDao()?.all
+        recyclerView.adapter = UsersAdapter(list)
 
-            if (accounts?.size != 0) {
-
-                localTransport.sendMePacketNow()
-
-               val users = (application as HuruApp).getDatabase()?.usersDao()?.all
-
-                if (users?.size != 0) {
-                    runOnUiThread({
-                        recyclerView.adapter = UsersAdapter(users)
-                    })
-                }
-
-            } else {
-                Timber.d("No account object found")
-
-            }
-        })
 
         recyclerView.addOnItemTouchListener(RecyclerTouchListener(applicationContext, recyclerView, object : RecyclerTouchListener.ClickListener {
             override fun onClick(view: View?, position: Int) {
@@ -109,32 +82,12 @@ class MainActivity : AppCompatActivity(), LocalTransport.OnMePacketReceivedListe
         val str = "mePacketReceived from : ${mePacket.name} \n"
         Timber.d(str)
 
+        val user = (application as HuruApp).getAccount()?.findUserByDeviceId(mePacket.deviceId)
+        user?.localAddressCard = mePacket.localAddressCard.toBytes()
+        user?.name = mePacket.name
 
-        val executor = Executors.newSingleThreadExecutor()
+        runOnUiThread({
 
-        var userInLocal : UserEntity? = UserEntity()
-        executor.execute({
-            userInLocal = (application as HuruApp).getDatabase()?.usersDao()?.findByDeviceId(mePacket.deviceId)
-
-            if (userInLocal == null) {
-                userInLocal = UserEntity()
-            }
-            userInLocal?.device_id = mePacket.deviceId
-            userInLocal?.mePacket = mePacket.toByteArray()
-            userInLocal?.name = mePacket.name
-
-            runOnUiThread({
-                val userAdapter = ((recyclerView.adapter) as UsersAdapter)
-                val index = userAdapter.userEntityList.indexOf(userInLocal)
-
-                if(index != -1){
-                    userAdapter.userEntityList.set(index,userInLocal)
-                    userAdapter.notifyItemChanged(index)
-                }else{
-                    userAdapter.addUser(userInLocal)
-                }
-
-            })
         })
 
 

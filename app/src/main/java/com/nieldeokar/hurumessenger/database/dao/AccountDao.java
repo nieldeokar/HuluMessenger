@@ -6,13 +6,10 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
-import com.nieldeokar.hurumessenger.R;
 import com.nieldeokar.hurumessenger.database.entity.AccountEntity;
-import com.nieldeokar.hurumessenger.database.entity.UserEntity;
 
 import java.util.List;
 
-import static android.arch.persistence.room.OnConflictStrategy.IGNORE;
 import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 
 /**

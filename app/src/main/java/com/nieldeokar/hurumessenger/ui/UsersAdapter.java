@@ -7,10 +7,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.nieldeokar.hurumessenger.R;
-import com.nieldeokar.hurumessenger.database.entity.UserEntity;
+import com.nieldeokar.hurumessenger.models.User;
+import com.nieldeokar.hurumessenger.packets.LocalAddressCard;
 import com.nieldeokar.hurumessenger.packets.MePacket;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by @nieldeokar on 13/06/18.
@@ -18,7 +22,7 @@ import java.util.List;
 
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.MyViewHolder> {
 
-    public List<UserEntity> userEntityList;
+    public List<User> userList;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView tvName, tvIp;
@@ -31,13 +35,13 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.MyViewHolder
     }
 
 
-    public UsersAdapter(List<UserEntity> usersList) {
-        this.userEntityList = usersList;
+    public UsersAdapter(List<User> users) {
+        this.userList = users;
     }
 
-    public void addUser(UserEntity userEntity){
-        this.userEntityList.add(userEntity);
-        notifyItemInserted(userEntityList.size());
+    public void addUser(User user){
+        this.userList.add(user);
+        notifyItemInserted(userList.size());
     }
 
     @Override
@@ -50,24 +54,23 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.MyViewHolder
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        UserEntity userEntity = userEntityList.get(position);
+        User user = userList.get(position);
 
-        String name = userEntity.getName() + " : " +  userEntity.getDevice_id();
+        String name = user.getName() + " : " +  user.getDeviceId();
 
         holder.tvName.setText(name);
 
-        if(userEntity.getMePacket() !=null){
-            MePacket mePacket = new MePacket();
-            mePacket.setPacket(userEntity.getMePacket());
+        if(user.getLocalAddressCard() !=null){
 
-            holder.tvIp.setText(mePacket.getLocalAddressCard().getLocalV4Address().toString());
+            LocalAddressCard addressCard = new LocalAddressCard(Objects.requireNonNull(user.getLocalAddressCard()));
+            holder.tvIp.setText(addressCard.getLocalV4Address().getAddress().toString());
         }
 
     }
 
     @Override
     public int getItemCount() {
-        return userEntityList.size();
+        return userList.size();
     }
 
 }

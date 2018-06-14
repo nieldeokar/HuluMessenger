@@ -4,19 +4,16 @@ import android.arch.persistence.room.Database
 import android.arch.persistence.room.Room
 import android.arch.persistence.room.RoomDatabase
 import android.content.Context
-import android.arch.persistence.db.SupportSQLiteDatabase
-import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.LiveData
 import com.nieldeokar.hurumessenger.database.dao.AccountDao
 import com.nieldeokar.hurumessenger.database.dao.UsersDao
 import com.nieldeokar.hurumessenger.database.entity.AccountEntity
-import com.nieldeokar.hurumessenger.database.entity.UserEntity
+import com.nieldeokar.hurumessenger.database.entity.User
 
 /**
  * Created by @nieldeokar on 27/05/18.
  */
 
-@Database(entities = [UserEntity::class,AccountEntity::class], version = 1)
+@Database(entities = [User::class,AccountEntity::class], version = 1)
 
 abstract class AppDatabase : RoomDatabase() {
 
