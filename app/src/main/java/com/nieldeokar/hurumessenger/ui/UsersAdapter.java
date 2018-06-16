@@ -63,7 +63,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.MyViewHolder
         if(user.getLocalAddressCard() !=null){
 
             LocalAddressCard addressCard = new LocalAddressCard(Objects.requireNonNull(user.getLocalAddressCard()));
-            holder.tvIp.setText(addressCard.getLocalV4Address().getAddress().toString());
+            holder.tvIp.setText((addressCard.getLocalV4Address()).toString());
         }
 
     }

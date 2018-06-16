@@ -3,16 +3,17 @@ package com.nieldeokar.hurumessenger
 import android.app.Application
 import android.provider.Settings
 import android.util.Log
-import com.nieldeokar.hurumessenger.database.dao.AccountDao
-import com.nieldeokar.hurumessenger.database.entity.AccountEntity
+import com.nieldeokar.hurumessenger.di.ApplicationComponent
+import com.nieldeokar.hurumessenger.di.ApplicationModule
+import com.nieldeokar.hurumessenger.di.DaggerApplicationComponent
 import com.nieldeokar.hurumessenger.generator.PacketGenerator
 import com.nieldeokar.hurumessenger.models.Account
 import com.nieldeokar.hurumessenger.packets.LocalAddressCard
 import com.nieldeokar.hurumessenger.services.LocalTransport
 import com.nieldeokar.hurumessenger.utils.NetworkUtils
 import com.nieldeokar.hurumessenger.utils.Utils
-import com.nileshdeokar.healthapp.database.AppDatabase
 import timber.log.Timber
+import javax.inject.Inject
 
 class HuruApp : Application() {
 
@@ -20,18 +21,25 @@ class HuruApp : Application() {
 
         lateinit var appInstance : HuruApp
         lateinit var account : Account
-        lateinit var localTransport: LocalTransport
-
     }
+
+    @Inject
+    lateinit var localTransport: LocalTransport
+
+    private var mApplicationComponent: ApplicationComponent? = null
 
     override fun onCreate() {
         super.onCreate()
         appInstance = this
-        localTransport = LocalTransport()
+
+
+        mApplicationComponent = DaggerApplicationComponent.builder().applicationModule(ApplicationModule(this)).build()
+        mApplicationComponent!!.inject(this)
+
         localTransport.initialise()
 
         account = Account()
-        account.devicId = (application as HuruApp).getDeviceID()
+        account.devicId = getDeviceID()
         account.name = ""
         val addressCard = LocalAddressCard()
         addressCard.localV4Address = NetworkUtils.getLocalIpV4Address()!!
@@ -57,12 +65,14 @@ class HuruApp : Application() {
         return account
     }
 
-    fun getDatabase(): AppDatabase? {
-        return AppDatabase.getInstance(this)
-    }
 
     fun getDeviceID() : String {
         return  Settings.Secure.getString(contentResolver,
                 Settings.Secure.ANDROID_ID)
     }
+
+    fun getComponent(): ApplicationComponent? {
+        return mApplicationComponent
+    }
+
 }

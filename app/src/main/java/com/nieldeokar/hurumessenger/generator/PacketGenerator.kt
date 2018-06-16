@@ -17,7 +17,7 @@ class PacketGenerator {
         localAddressCard.localV4Port = LocalTransport.listeningPort
 
         mePacket.localAddressCard = localAddressCard
-        mePacket.name = HuruApp.userName
+        mePacket.name = HuruApp.account.name
         mePacket.deviceId = HuruApp.appInstance.getDeviceID()
 
 

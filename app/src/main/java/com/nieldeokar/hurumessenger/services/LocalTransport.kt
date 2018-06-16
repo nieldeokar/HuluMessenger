@@ -72,7 +72,7 @@ class LocalTransport {
         }
     }
 
-    fun setOnMePacketReceivedListener(on : OnMePacketReceivedListener){
+    fun setOnMePacketReceivedListener(on : OnMePacketReceivedListener?){
         this.onMePacketReceivedListener = on
     }
 
