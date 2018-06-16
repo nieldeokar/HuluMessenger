@@ -1,5 +1,6 @@
-package com.nieldeokar.hurumessenger.ui;
+package com.nieldeokar.hurumessenger.ui.chat;
 
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,10 +10,8 @@ import android.widget.TextView;
 import com.nieldeokar.hurumessenger.R;
 import com.nieldeokar.hurumessenger.models.User;
 import com.nieldeokar.hurumessenger.packets.LocalAddressCard;
-import com.nieldeokar.hurumessenger.packets.MePacket;
+import com.nieldeokar.hurumessenger.ui.main.UsersAdapter;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,22 +19,11 @@ import java.util.Objects;
  * Created by @nieldeokar on 13/06/18.
  */
 
-public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.MyViewHolder> {
+public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
 
     public List<User> userList;
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvName, tvIp;
-
-        public MyViewHolder(View view) {
-            super(view);
-            tvName = (TextView) view.findViewById(R.id.tvName);
-            tvIp = (TextView) view.findViewById(R.id.tvIp);
-        }
-    }
-
-
-    public UsersAdapter(List<User> users) {
+    public ChatAdapter(List<User> users) {
         this.userList = users;
     }
 
@@ -45,15 +33,16 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.MyViewHolder
     }
 
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ChatViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.row_user, parent, false);
 
-        return new MyViewHolder(itemView);
+        return new ChatViewHolder(itemView);
     }
 
+
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(ChatViewHolder holder, int position) {
         User user = userList.get(position);
 
         String name = user.getName() + " : " +  user.getDeviceId();
@@ -73,4 +62,13 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.MyViewHolder
         return userList.size();
     }
 
+    public class ChatViewHolder extends RecyclerView.ViewHolder {
+        public TextView tvName, tvIp;
+
+        public ChatViewHolder(View view) {
+            super(view);
+            tvName = (TextView) view.findViewById(R.id.tvName);
+            tvIp = (TextView) view.findViewById(R.id.tvIp);
+        }
+    }
 }

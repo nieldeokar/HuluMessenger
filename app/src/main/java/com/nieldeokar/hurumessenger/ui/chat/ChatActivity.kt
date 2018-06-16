@@ -1,4 +1,4 @@
-package com.nieldeokar.hurumessenger.ui.main
+package com.nieldeokar.hurumessenger.ui.chat
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -17,23 +17,18 @@ import com.nieldeokar.hurumessenger.ui.RecyclerTouchListener
 import com.nieldeokar.hurumessenger.ui.main.di.DaggerMainActivityComponent
 import com.nieldeokar.hurumessenger.ui.main.di.MainActivityModule
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.ArrayList
 import javax.inject.Inject
 
 
-class MainActivity : AppCompatActivity(), LocalTransport.OnMePacketReceivedListener {
+class ChatActivity : AppCompatActivity(), LocalTransport.OnMePacketReceivedListener {
 
 
     @Inject
     lateinit var localTransport: LocalTransport
 
-    val list = ArrayList<User>()
-    val adapter = UsersAdapter(list)
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_chat)
 
         DaggerMainActivityComponent.builder()
                 .applicationComponent((application as HuruApp).getComponent())
