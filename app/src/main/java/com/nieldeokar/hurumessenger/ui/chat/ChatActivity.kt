@@ -8,44 +8,56 @@ import android.view.View
 import android.widget.Toast
 import com.nieldeokar.hurumessenger.HuruApp
 import com.nieldeokar.hurumessenger.R
+import com.nieldeokar.hurumessenger.models.Message
 import com.nieldeokar.hurumessenger.packets.MePacket
 import com.nieldeokar.hurumessenger.services.LocalTransport
 import timber.log.Timber
 import com.nieldeokar.hurumessenger.models.User
+import com.nieldeokar.hurumessenger.packets.MessagePacket
 import com.nieldeokar.hurumessenger.ui.MyDividerItemDecoration
 import com.nieldeokar.hurumessenger.ui.RecyclerTouchListener
-import com.nieldeokar.hurumessenger.ui.main.di.DaggerMainActivityComponent
-import com.nieldeokar.hurumessenger.ui.main.di.MainActivityModule
+import com.nieldeokar.hurumessenger.ui.chat.di.ChatActivityModule
+import com.nieldeokar.hurumessenger.ui.chat.di.DaggerChatActivityComponent
+import kotlinx.android.synthetic.main.activity_chat.*
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.editor.*
+import java.util.ArrayList
 import javax.inject.Inject
 
 
-class ChatActivity : AppCompatActivity(), LocalTransport.OnMePacketReceivedListener {
-
+class ChatActivity : AppCompatActivity(), LocalTransport.OnPacketReceivedListener {
 
     @Inject
     lateinit var localTransport: LocalTransport
+
+    var list  : ArrayList<Message>? = ArrayList<Message>()
+
+    val adapter = ChatAdapter(list)
+    var currentUser : User? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
 
-        DaggerMainActivityComponent.builder()
+        DaggerChatActivityComponent.builder()
                 .applicationComponent((application as HuruApp).getComponent())
-                .mainActivityModule(MainActivityModule())
+                .chatActivityModule(ChatActivityModule())
                 .build()
                 .inject(this)
 
 
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.addItemDecoration(MyDividerItemDecoration(this, LinearLayoutManager.VERTICAL, 16))
-        recyclerView.itemAnimator = DefaultItemAnimator()
+
+        chatRecycler.layoutManager = LinearLayoutManager(this)
+        chatRecycler.addItemDecoration(MyDividerItemDecoration(this, LinearLayoutManager.VERTICAL, 16))
+        chatRecycler.itemAnimator = DefaultItemAnimator()
+
+        currentUser = intent.getParcelableExtra("USER")
+        list = currentUser?.messages
+        adapter.messageList = list
+        chatRecycler.adapter = adapter
 
 
-        recyclerView.adapter = adapter
-
-
-        recyclerView.addOnItemTouchListener(RecyclerTouchListener(applicationContext, recyclerView, object : RecyclerTouchListener.ClickListener {
+        chatRecycler.addOnItemTouchListener(RecyclerTouchListener(applicationContext, recyclerView, object : RecyclerTouchListener.ClickListener {
             override fun onClick(view: View?, position: Int) {
 
             }
@@ -57,14 +69,13 @@ class ChatActivity : AppCompatActivity(), LocalTransport.OnMePacketReceivedListe
 
     }
 
-    fun send(view: View) {
-        val usrName = etUserName.text.toString()
-        if (usrName.isNotBlank() && usrName.isNotEmpty()) {
-            (application as HuruApp).getAccount()?.name =usrName
+    fun sendMessage(view: View) {
+        val strMessage = edit_message.text.toString()
+        if (strMessage.isNotBlank() && strMessage.isNotEmpty() && currentUser != null) {
 
-            localTransport.sendMePacketNow()
+            localTransport.sendMessagePacket(currentUser!!,strMessage)
         }else{
-            Toast.makeText(this,"Please enter username ",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this,"Please enter message ",Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -72,42 +83,52 @@ class ChatActivity : AppCompatActivity(), LocalTransport.OnMePacketReceivedListe
         val str = "mePacketReceived from : ${mePacket.name} \n"
         Timber.d(str)
 
-        var user = (application as HuruApp).getAccount()?.findUserByDeviceId(mePacket.deviceId)
+    }
 
-        if(user == null){
-            user = User()
-        }
-        user.localAddressCard = mePacket.localAddressCard.toBytes()
-        user.name = mePacket.name
-        user.deviceId = mePacket.deviceId
+    override fun onMessagePacketReceived(messagePacket: MessagePacket) {
+        val str = "msgPacketReceived from : ${messagePacket.senderId} \n"
+        Timber.d(str)
 
+        if(currentUser?.deviceId == messagePacket.senderId) {
 
-        runOnUiThread({
-            for ((i, usr) in adapter.userList.withIndex()){
-                if(usr.deviceId == user.deviceId){
-                    adapter.userList[i] = user
-                    adapter.notifyItemChanged(i)
-                    return@runOnUiThread
-                }
+            var message = currentUser?.findMessageById(messagePacket.messageId)
+
+            if (message == null) {
+                message = Message()
             }
-            (application as HuruApp).getAccount()?.usersList?.add(user)
-            adapter.addUser(user)
-        })
 
+            message.textBody = messagePacket.msgBody
+            message.timeOfCreation = messagePacket.timeOfCreation
+            message.senderId = messagePacket.senderId
+            message.msgId = messagePacket.messageId
+
+            runOnUiThread {
+                    for ((i, msg) in adapter.messageList.withIndex()){
+                        if(msg.msgId == message.msgId){
+                            adapter.messageList[i] = message
+                            adapter.notifyItemChanged(i)
+                            return@runOnUiThread
+                        }
+                    }
+                    adapter.addMessage(message)
+            }
+
+        }else {
+            Timber.d("Received msg from another user")
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        localTransport.stop()
     }
 
     override fun onStart() {
         super.onStart()
-        localTransport.setOnMePacketReceivedListener(this)
+        localTransport.setOnPacketReceivedListener(this)
     }
 
     override fun onStop() {
         super.onStop()
-        localTransport.setOnMePacketReceivedListener(null)
+        localTransport.setOnPacketReceivedListener(null)
     }
 }

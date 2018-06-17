@@ -1,41 +1,43 @@
 package com.nieldeokar.hurumessenger.ui.chat;
 
-import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.nieldeokar.hurumessenger.R;
+import com.nieldeokar.hurumessenger.models.Message;
 import com.nieldeokar.hurumessenger.models.User;
 import com.nieldeokar.hurumessenger.packets.LocalAddressCard;
-import com.nieldeokar.hurumessenger.ui.main.UsersAdapter;
+import com.nieldeokar.hurumessenger.utils.Utils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * Created by @nieldeokar on 13/06/18.
+ * Created by @nieldeokar on 16/06/18.
  */
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
 
-    public List<User> userList;
+    public List<Message> messageList = new ArrayList<>();
 
-    public ChatAdapter(List<User> users) {
-        this.userList = users;
+    public ChatAdapter(List<Message> messages) {
+        this.messageList = messages;
     }
 
-    public void addUser(User user){
-        this.userList.add(user);
-        notifyItemInserted(userList.size());
+    public void addMessage(Message message){
+        this.messageList.add(message);
+        notifyItemInserted(messageList.size());
     }
 
     @Override
     public ChatViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.row_user, parent, false);
+                .inflate(viewType, parent, false);
 
         return new ChatViewHolder(itemView);
     }
@@ -43,32 +45,41 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
 
     @Override
     public void onBindViewHolder(ChatViewHolder holder, int position) {
-        User user = userList.get(position);
+        Message message = messageList.get(position);
 
-        String name = user.getName() + " : " +  user.getDeviceId();
 
-        holder.tvName.setText(name);
+        holder.tvMessageBody.setText(message.getTextBody());
 
-        if(user.getLocalAddressCard() !=null){
+        holder.tvTime.setText(Utils.formatTime(message.getTimeOfCreation()));
 
-            LocalAddressCard addressCard = new LocalAddressCard(Objects.requireNonNull(user.getLocalAddressCard()));
-            holder.tvIp.setText((addressCard.getLocalV4Address()).toString());
-        }
+
 
     }
 
     @Override
+    public int getItemViewType(int position) {
+
+        if(messageList.get(position).isOutgoingMessage()) {
+            return R.layout.row_message_sent;
+        }else{
+            return R.layout.row_message_received;
+        }
+    }
+
+    @Override
     public int getItemCount() {
-        return userList.size();
+        return messageList.size();
     }
 
     public class ChatViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvName, tvIp;
+        public TextView tvMessageBody, tvTime;
+        public ImageView imgStatus;
 
         public ChatViewHolder(View view) {
             super(view);
-            tvName = (TextView) view.findViewById(R.id.tvName);
-            tvIp = (TextView) view.findViewById(R.id.tvIp);
+            tvMessageBody = (TextView) view.findViewById(R.id.tvTextBody);
+            tvTime= (TextView) view.findViewById(R.id.tvTime);
+            imgStatus = (ImageView) view.findViewById(R.id.imgStatus);
         }
     }
 }

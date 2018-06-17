@@ -3,14 +3,19 @@ package com.nieldeokar.hurumessenger.services
 import android.os.Handler
 import com.nieldeokar.hurumessenger.HuruApp
 import com.nieldeokar.hurumessenger.generator.PacketGenerator
+import com.nieldeokar.hurumessenger.models.User
+import com.nieldeokar.hurumessenger.packets.LocalAddressCard
 import com.nieldeokar.hurumessenger.packets.MePacket
+import com.nieldeokar.hurumessenger.packets.MessagePacket
 import com.nieldeokar.hurumessenger.utils.NetworkUtils
+import com.nieldeokar.hurumessenger.utils.Utils
 import timber.log.Timber
 import java.io.IOException
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
 import java.net.InetSocketAddress
+import java.nio.ByteBuffer
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -37,7 +42,7 @@ class LocalTransport {
     private val broadcastPorts = intArrayOf(33445,9128,8888)
     private var hasBroadcastableNetwork = false
 
-    private var onMePacketReceivedListener : OnMePacketReceivedListener? = null
+    private var onPacketReceivedListener: OnPacketReceivedListener? = null
 
     @Volatile private var lastSentTime = 0L
 
@@ -72,8 +77,8 @@ class LocalTransport {
         }
     }
 
-    fun setOnMePacketReceivedListener(on : OnMePacketReceivedListener?){
-        this.onMePacketReceivedListener = on
+    fun setOnPacketReceivedListener(on : OnPacketReceivedListener?){
+        this.onPacketReceivedListener = on
     }
 
     fun initialise() {
@@ -93,6 +98,35 @@ class LocalTransport {
     fun sendMePacketNow() {
         handler?.removeCallbacks(mePacketSenderRunnable)
         handler?.post(mePacketSenderRunnable)
+    }
+
+    fun sendMessagePacket(user: User,message : String){
+        val messagePacket = packetGenerator.generateMessagePacket(user,message)
+
+        if (user.localAddressCard == null) {
+            Timber.d("User address card is null")
+            return
+        }
+        val addressCard = LocalAddressCard(user.localAddressCard!!)
+        val receiverSocketAddress = InetSocketAddress(addressCard.localV4Address, addressCard.localV4Port)
+        if (receiverSocketAddress != null && NetworkUtils.isValidNonSelfSocket(receiverSocketAddress)) {
+            val packet = DatagramPacket(messagePacket, messagePacket.size, receiverSocketAddress)
+            Timber.d("Publish local packet")
+            handler?.post { sendDataGram(packet) }
+        } else {
+            Timber.d("Invalid destination for local transport. Ignoring")
+        }
+    }
+
+    private fun sendDataGram(datagramPacket: DatagramPacket) {
+        try {
+            if (localSocket != null && !localSocket!!.isClosed) {
+                localSocket!!.send(datagramPacket)
+            }
+        } catch (e: IOException) {
+            Timber.e(e)
+        }
+
     }
 
     private fun setLastSentTime(lastSentTime : Long) {
@@ -166,24 +200,33 @@ class LocalTransport {
                         continue
                     }
                     val packetData = Arrays.copyOfRange(packet.data, 0, packet.length)
-
-                    val mePacket = MePacket()
-                    mePacket.setPacket(packetData)
+                    val byteBuffer = ByteBuffer.wrap(packetData)
+                    val type = Utils.toUnsignedInt(byteBuffer.get())
 
                     Timber.i("Received broadcast packet from %s", address.toString())
 
-                    when (mePacket.packetType) {
+                    when (type) {
                         1 -> {
+
+                            val mePacket = MePacket()
+                            mePacket.setPacket(packetData)
+
+
                             Timber.i("packetAddress " + mePacket.localAddressCard.localV4Address.toString())
                             Timber.i("packetName " + mePacket.name)
                             if (System.currentTimeMillis() - getLastSentTime() > 1000) {
                                 sendMePacketNow()
                             }
 
-                            onMePacketReceivedListener?.onMePacketReceived(mePacket)
-
+                            onPacketReceivedListener?.onMePacketReceived(mePacket)
                         }
-                        else -> Timber.w("Received in unknown packet type %d on %s , from %s. Packet size %d", mePacket.packetType, Thread.currentThread().name, address.toString(), packetData.size)
+                        2 ->{
+                            val messagePacket = MessagePacket()
+                            messagePacket.setPacket(packetData)
+
+                            onPacketReceivedListener?.onMessagePacketReceived(messagePacket)
+                        }
+                        else -> Timber.w("Received in unknown packet type %d on %s , from %s. Packet size %d", type, Thread.currentThread().name, address.toString(), packetData.size)
                     }
                     retryCount = 0
                 } catch (e: IOException) {
@@ -199,7 +242,8 @@ class LocalTransport {
         }
     }
 
-    interface OnMePacketReceivedListener {
+    interface OnPacketReceivedListener {
         fun onMePacketReceived(mePacket: MePacket)
+        fun onMessagePacketReceived(messagePacket : MessagePacket)
     }
 }

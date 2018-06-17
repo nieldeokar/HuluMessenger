@@ -6,6 +6,8 @@ apply plugin: 'kotlin-android-extensions'
 
 apply plugin: 'kotlin-kapt'
 
+apply plugin: 'org.jetbrains.kotlin.android.extensions'
+
 android {
     compileSdkVersion 27
     defaultConfig {
@@ -27,6 +29,11 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     buildToolsVersion '27.0.3'
+
+}
+
+androidExtensions {
+    experimental = true
 }
 
 dependencies {

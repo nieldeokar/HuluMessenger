@@ -20,6 +20,7 @@ import java.util.Objects;
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.MyViewHolder> {
 
     public List<User> userList;
+    byte[] arra = null;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView tvName, tvIp;

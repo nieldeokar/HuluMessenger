@@ -1,6 +1,12 @@
 package com.nieldeokar.hurumessenger.utils;
 
+import android.icu.text.DateFormat;
+import android.os.Build;
+
 import java.security.InvalidParameterException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class Utils {
 
@@ -28,5 +34,17 @@ public class Utils {
 
     public static int toUnsignedInt(byte x) {
         return ((int) x) & 0xff;
+    }
+
+
+    public static String formatTime(long time){
+        Date date = new Date(time);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            DateFormat df = DateFormat.getDateInstance(DateFormat.LONG, Locale.ENGLISH);
+            return df.format(date);
+        }else {
+            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm aa");
+            return sdf.format(date);
+        }
     }
 }
