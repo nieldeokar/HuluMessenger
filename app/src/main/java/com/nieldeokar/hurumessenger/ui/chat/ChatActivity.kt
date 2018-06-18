@@ -14,14 +14,13 @@ import com.nieldeokar.hurumessenger.services.LocalTransport
 import timber.log.Timber
 import com.nieldeokar.hurumessenger.models.User
 import com.nieldeokar.hurumessenger.packets.MessagePacket
-import com.nieldeokar.hurumessenger.ui.MyDividerItemDecoration
 import com.nieldeokar.hurumessenger.ui.RecyclerTouchListener
 import com.nieldeokar.hurumessenger.ui.chat.di.ChatActivityModule
 import com.nieldeokar.hurumessenger.ui.chat.di.DaggerChatActivityComponent
 import kotlinx.android.synthetic.main.activity_chat.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.editor.*
-import java.util.ArrayList
+import java.util.*
 import javax.inject.Inject
 
 
@@ -30,7 +29,7 @@ class ChatActivity : AppCompatActivity(), LocalTransport.OnPacketReceivedListene
     @Inject
     lateinit var localTransport: LocalTransport
 
-    var list  : ArrayList<Message>? = ArrayList<Message>()
+    var list  : MutableList<Message>? = ArrayList()
 
     val adapter = ChatAdapter(list)
     var currentUser : User? = null
@@ -46,9 +45,16 @@ class ChatActivity : AppCompatActivity(), LocalTransport.OnPacketReceivedListene
                 .inject(this)
 
 
+        setSupportActionBar(findViewById(R.id.toolbar))
+        val actionBar = supportActionBar
+        if (actionBar != null) {
+            actionBar.setDisplayUseLogoEnabled(true)
+            actionBar.setDisplayHomeAsUpEnabled(true)
+            actionBar.setHomeButtonEnabled(true)
+        }
 
+        adapter.setContext(this)
         chatRecycler.layoutManager = LinearLayoutManager(this)
-        chatRecycler.addItemDecoration(MyDividerItemDecoration(this, LinearLayoutManager.VERTICAL, 16))
         chatRecycler.itemAnimator = DefaultItemAnimator()
 
         currentUser = intent.getParcelableExtra("USER")
@@ -56,6 +62,7 @@ class ChatActivity : AppCompatActivity(), LocalTransport.OnPacketReceivedListene
         adapter.messageList = list
         chatRecycler.adapter = adapter
 
+        actionBar?.title = currentUser?.name
 
         chatRecycler.addOnItemTouchListener(RecyclerTouchListener(applicationContext, recyclerView, object : RecyclerTouchListener.ClickListener {
             override fun onClick(view: View?, position: Int) {
@@ -72,8 +79,17 @@ class ChatActivity : AppCompatActivity(), LocalTransport.OnPacketReceivedListene
     fun sendMessage(view: View) {
         val strMessage = edit_message.text.toString()
         if (strMessage.isNotBlank() && strMessage.isNotEmpty() && currentUser != null) {
+            val message = Message()
+            message.msgId = UUID.randomUUID().toString()
+            message.senderId = HuruApp.account.devicId
+            message.timeOfCreation = System.currentTimeMillis()
+            message.textBody = strMessage
+            localTransport.sendMessagePacket(currentUser!!,message)
 
-            localTransport.sendMessagePacket(currentUser!!,strMessage)
+            adapter.addMessage(message)
+            chatRecycler.smoothScrollToPosition(chatRecycler.adapter.itemCount)
+            edit_message.setText("")
+
         }else{
             Toast.makeText(this,"Please enter message ",Toast.LENGTH_SHORT).show()
         }
@@ -110,6 +126,7 @@ class ChatActivity : AppCompatActivity(), LocalTransport.OnPacketReceivedListene
                             return@runOnUiThread
                         }
                     }
+                chatRecycler.smoothScrollToPosition(chatRecycler.adapter.itemCount)
                     adapter.addMessage(message)
             }
 
@@ -129,6 +146,6 @@ class ChatActivity : AppCompatActivity(), LocalTransport.OnPacketReceivedListene
 
     override fun onStop() {
         super.onStop()
-        localTransport.setOnPacketReceivedListener(null)
+//        localTransport.setOnPacketReceivedListener(null)
     }
 }

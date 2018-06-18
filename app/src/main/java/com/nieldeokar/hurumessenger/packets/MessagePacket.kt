@@ -35,7 +35,7 @@ class MessagePacket {
         val messageIdLengthInBytes = Utils.toUnsignedInt(byteBuffer.get())
         val messageIdAsBytes = ByteArray(messageIdLengthInBytes)
         byteBuffer.get(messageIdAsBytes)
-        messageId = String(senderIdAsBytes, Charsets.UTF_8)
+        messageId = String(messageIdAsBytes, Charsets.UTF_8)
 
     }
 

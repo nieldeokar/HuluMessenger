@@ -3,6 +3,7 @@ package com.nieldeokar.hurumessenger.services
 import android.os.Handler
 import com.nieldeokar.hurumessenger.HuruApp
 import com.nieldeokar.hurumessenger.generator.PacketGenerator
+import com.nieldeokar.hurumessenger.models.Message
 import com.nieldeokar.hurumessenger.models.User
 import com.nieldeokar.hurumessenger.packets.LocalAddressCard
 import com.nieldeokar.hurumessenger.packets.MePacket
@@ -100,11 +101,11 @@ class LocalTransport {
         handler?.post(mePacketSenderRunnable)
     }
 
-    fun sendMessagePacket(user: User,message : String){
-        val messagePacket = packetGenerator.generateMessagePacket(user,message)
+    fun sendMessagePacket(user: User, message: Message){
+        val messagePacket = packetGenerator.generateMessagePacket(message)
 
         if (user.localAddressCard == null) {
-            Timber.d("User address card is null")
+            Timber.e("User address card is null")
             return
         }
         val addressCard = LocalAddressCard(user.localAddressCard!!)

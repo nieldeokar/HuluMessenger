@@ -32,7 +32,9 @@
             android:name=".services.HuruService"
             android:exported="false" />
 
-        <activity android:name="com.nieldeokar.hurumessenger.ui.chat.ChatActivity"></activity>
+        <activity android:name="com.nieldeokar.hurumessenger.ui.chat.ChatActivity"
+            android:theme="@style/AppTheme.NoActionbar"
+            ></activity>
     </application>
 
 </manifest>

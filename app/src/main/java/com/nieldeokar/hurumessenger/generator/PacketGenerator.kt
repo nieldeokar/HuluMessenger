@@ -1,6 +1,7 @@
 package com.nieldeokar.hurumessenger.generator
 
 import com.nieldeokar.hurumessenger.HuruApp
+import com.nieldeokar.hurumessenger.models.Message
 import com.nieldeokar.hurumessenger.models.User
 import com.nieldeokar.hurumessenger.packets.LocalAddressCard
 import com.nieldeokar.hurumessenger.packets.MePacket
@@ -27,13 +28,13 @@ class PacketGenerator {
         return mePacket.toByteArray()
     }
 
-    fun generateMessagePacket(user: User, message : String) : ByteArray {
+    fun generateMessagePacket(message : Message) : ByteArray {
         val messagePacket = MessagePacket()
 
-        messagePacket.messageId = UUID.randomUUID().toString()
-        messagePacket.senderId = user.deviceId
-        messagePacket.msgBody = message
-        messagePacket.timeOfCreation = System.currentTimeMillis()
+        messagePacket.messageId = message.msgId
+        messagePacket.senderId = message.senderId
+        messagePacket.msgBody = message.textBody
+        messagePacket.timeOfCreation = message.timeOfCreation
         messagePacket.packetType = 2
 
 

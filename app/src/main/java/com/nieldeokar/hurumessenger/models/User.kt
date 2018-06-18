@@ -1,20 +1,14 @@
 package com.nieldeokar.hurumessenger.models
 
-import android.annotation.SuppressLint
 import android.os.Parcel
 import android.os.Parcelable
-import com.nieldeokar.hurumessenger.packets.LocalAddressCard
-import kotlinx.android.parcel.Parcelize
 import java.util.ArrayList
 
 
-
-
-@Parcelize
 class User(var uid : Int = 0,var name: String = "",var deviceId: String = "",
            var localAddressCard : ByteArray? = null,
            var lastActiveTime : Long = 0L,
-           var messages :ArrayList<Message> = ArrayList()) : Parcelable {
+           var messages :MutableList<Message> = ArrayList()) : Parcelable {
 
 
     fun findMessageById(id : String) : Message? {
@@ -26,28 +20,32 @@ class User(var uid : Int = 0,var name: String = "",var deviceId: String = "",
             parcel.readInt(),
             parcel.readString(),
             parcel.readString(),
-            parcel.readByteArray(LocalAddressCard()),
-            parcel.readArrayList()
-            )
+            parcel.createByteArray(),
+            parcel.readLong(),
+            arrayListOf<Message>().apply {
+                parcel.readList(this, Message::class.java.classLoader)
+            })
+
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(uid)
         parcel.writeString(name)
         parcel.writeString(deviceId)
-        parcel.writeString(email)
-        parcel.writeLong(phone)
+        parcel.writeByteArray(localAddressCard)
+        parcel.writeLong(lastActiveTime)
+        parcel.writeList(messages)
     }
 
     override fun describeContents(): Int {
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<Person> {
-        override fun createFromParcel(parcel: Parcel): Person {
-            return Person(parcel)
+    companion object CREATOR : Parcelable.Creator<User> {
+        override fun createFromParcel(parcel: Parcel): User {
+            return User(parcel)
         }
 
-        override fun newArray(size: Int): Array<Person?> {
+        override fun newArray(size: Int): Array<User?> {
             return arrayOfNulls(size)
         }
     }

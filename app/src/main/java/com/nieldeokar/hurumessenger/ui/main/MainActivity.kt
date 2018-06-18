@@ -129,6 +129,6 @@ class MainActivity : AppCompatActivity(), LocalTransport.OnPacketReceivedListene
 
     override fun onStop() {
         super.onStop()
-        localTransport.setOnPacketReceivedListener(null)
+//        localTransport.setOnPacketReceivedListener(null)
     }
 }

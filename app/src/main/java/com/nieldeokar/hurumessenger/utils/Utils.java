@@ -1,5 +1,6 @@
 package com.nieldeokar.hurumessenger.utils;
 
+import android.content.Context;
 import android.icu.text.DateFormat;
 import android.os.Build;
 
@@ -36,15 +37,8 @@ public class Utils {
         return ((int) x) & 0xff;
     }
 
-
-    public static String formatTime(long time){
-        Date date = new Date(time);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            DateFormat df = DateFormat.getDateInstance(DateFormat.LONG, Locale.ENGLISH);
-            return df.format(date);
-        }else {
-            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm aa");
-            return sdf.format(date);
-        }
+    public static String formatTime(Context context, long time) {
+        java.text.DateFormat df = android.text.format.DateFormat.getTimeFormat(context);
+        return df.format(time);
     }
 }

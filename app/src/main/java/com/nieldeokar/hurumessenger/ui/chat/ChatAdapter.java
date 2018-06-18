@@ -1,5 +1,6 @@
 package com.nieldeokar.hurumessenger.ui.chat;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,8 +10,6 @@ import android.widget.TextView;
 
 import com.nieldeokar.hurumessenger.R;
 import com.nieldeokar.hurumessenger.models.Message;
-import com.nieldeokar.hurumessenger.models.User;
-import com.nieldeokar.hurumessenger.packets.LocalAddressCard;
 import com.nieldeokar.hurumessenger.utils.Utils;
 
 import java.util.ArrayList;
@@ -25,8 +24,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
 
     public List<Message> messageList = new ArrayList<>();
 
+    private Context mContext ;
+
     public ChatAdapter(List<Message> messages) {
         this.messageList = messages;
+    }
+
+    public void setContext(Context context){
+        this.mContext = context;
     }
 
     public void addMessage(Message message){
@@ -50,7 +55,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
 
         holder.tvMessageBody.setText(message.getTextBody());
 
-        holder.tvTime.setText(Utils.formatTime(message.getTimeOfCreation()));
+        holder.tvTime.setText(Utils.formatTime(mContext,message.getTimeOfCreation()));
 
 
 
@@ -60,9 +65,9 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
     public int getItemViewType(int position) {
 
         if(messageList.get(position).isOutgoingMessage()) {
-            return R.layout.row_message_sent;
+            return R.layout.row_text_message_sent;
         }else{
-            return R.layout.row_message_received;
+            return R.layout.row_text_message_received;
         }
     }
 
@@ -77,9 +82,9 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
 
         public ChatViewHolder(View view) {
             super(view);
-            tvMessageBody = (TextView) view.findViewById(R.id.tvTextBody);
-            tvTime= (TextView) view.findViewById(R.id.tvTime);
-            imgStatus = (ImageView) view.findViewById(R.id.imgStatus);
+            tvMessageBody = (TextView) view.findViewById(R.id.message_body);
+            tvTime= (TextView) view.findViewById(R.id.message_time);
+            imgStatus = (ImageView) view.findViewById(R.id.indicator_received);
         }
     }
 }

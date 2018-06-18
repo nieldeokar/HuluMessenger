@@ -8,4 +8,14 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <declare-styleable name="MessageTextStyle">
+        <attr name="viewPartMain" format="reference" />
+        <attr name="viewPartSlave" format="reference" />
+    </declare-styleable>
+
+    <style name="AppTheme.NoActionbar" parent="AppTheme">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
 </resources>
