@@ -1,5 +1,5 @@
-# HuluMessenger
-Local End-to-End Messenging which is expected to work without Internet. Still under development 
+# HuruMessenger
+Local End-to-End Messaging which is expected to work without Internet. Still under development
 
 
 
@@ -12,3 +12,5 @@ Local End-to-End Messenging which is expected to work without Internet. Still un
 5. Update Address card in db
 6. Generate public keys
 7. Start communication
+
+
